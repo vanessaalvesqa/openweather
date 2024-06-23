@@ -61,6 +61,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const { context, github } = require('@actions/github');
             const issueTitle = 'CI Test Failure';
             const issueBody = `
             ## CI Test Failure Report
@@ -74,7 +75,7 @@ jobs:
             Check the [Actions tab](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details.
             `;
 
-            github.issues.create({
+            await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: issueTitle,
