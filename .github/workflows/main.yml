@@ -30,6 +30,7 @@ jobs:
           if [ ! -f requirements.txt ]; then
             echo "requirements.txt not found"
             exit 1
+          fi
 
       - name: Install dependencies
         run: |
@@ -61,7 +62,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { context, github } = require('@actions/github');
+            const { context, getOctokit } = require('@actions/github');
+            const octokit = getOctokit('${{ secrets.GITHUB_TOKEN }}');
             const issueTitle = 'CI Test Failure';
             const issueBody = `
             ## CI Test Failure Report
@@ -75,7 +77,7 @@ jobs:
             Check the [Actions tab](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details.
             `;
 
-            await github.rest.issues.create({
+            await octokit.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: issueTitle,
