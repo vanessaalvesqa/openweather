@@ -1,0 +1,1 @@
+The HTTP 429 error means "Too Many Requests," indicates that the user has sent too many requests in a short time limit. To reproduce it we can simulate a scenario where the script makes a lot of requests to a server in a short period.
