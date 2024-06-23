@@ -10,6 +10,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:  # Add this line to enable manual triggering
 
 jobs:
   build:
@@ -24,6 +25,12 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Check if requirements.txt exists
+        run: |
+          if [ ! -f requirements.txt ]; then
+            echo "requirements.txt not found"
+            exit 1
+
       - name: Install dependencies
         run: |
           python -m venv venv
@@ -31,6 +38,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
+        id: run-tests
         run: |
           source venv/bin/activate
           behave
@@ -46,3 +54,29 @@ jobs:
         with:
           name: test-report
           path: reports/report.html
+
+      - name: Create GitHub issue on failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueTitle = 'CI Test Failure';
+            const issueBody = `
+            ## CI Test Failure Report
+            The CI run for commit \`${{ github.sha }}\` failed.
+            **Branch:** \`${{ github.ref }}\`
+            **Workflow:** \`${{ github.workflow }}\`
+            **Job:** \`${{ github.job }}\`
+            **Run Number:** \`${{ github.run_number }}\`
+            **Run ID:** \`${{ github.run_id }}\`
+
+            Check the [Actions tab](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details.
+            `;
+
+            github.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issueTitle,
+              body: issueBody,
+            });
