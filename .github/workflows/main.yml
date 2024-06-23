@@ -1,9 +1,6 @@
 name: CI
 
 on:
-  schedule:
-    # Run at every 12 hours
-    - cron: '0 */12 * * *'
   push:
     branches:
       - main
